@@ -1,0 +1,16 @@
+{
+  "name": "yellow_mushroom-5483-relic-motion",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.219 preview",
+    "check": "npx --yes hyperframes@0.8.219 check",
+    "render": "npx --yes hyperframes@0.8.219 render",
+    "publish": "npx --yes hyperframes@0.8.219 publish",
+    "setup:media": "node scripts/setup-media-tools.mjs"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "5.2.0",
+    "ffprobe-static": "3.1.0"
+  }
+}

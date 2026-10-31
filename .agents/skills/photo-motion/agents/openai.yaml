@@ -1,0 +1,8 @@
+interface:
+  display_name: "Photo Motion"
+  short_description: "Animate still artworks into controlled seamless loops"
+  brand_color: "#D59A43"
+  default_prompt: "Use $photo-motion to animate the approved subject while keeping the rest of the artwork frozen."
+
+policy:
+  allow_implicit_invocation: true

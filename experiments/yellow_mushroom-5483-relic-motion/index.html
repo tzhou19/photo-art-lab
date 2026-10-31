@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1120, height=1400" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1120px; height: 1400px; overflow: hidden; background: #eee5d6; }
+      #root, #still, #motion-layer { position: absolute; inset: 0; width: 1120px; height: 1400px; }
+      #still { display: block; object-fit: contain; }
+      #motion-layer { pointer-events: none; }
+      .mushroom-cap {
+        position: absolute;
+        display: block;
+        transform-origin: 50% 84%;
+        will-change: transform;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-dpbo"
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="2.5"
+      data-width="1120"
+      data-height="1400"
+      data-fps="30"
+      data-layout-allow-overflow
+    >
+      <img data-hf-id="hf-vz1u"
+        id="still"
+        class="clip"
+        data-start="0"
+        data-duration="2.5"
+        data-track-index="0"
+        src="assets/yellow_mushroom-5483-relic-v2.png"
+        alt="菌光栖木 Photo Relic"
+      />
+      <div data-hf-id="hf-l90f"
+        id="motion-layer"
+        class="clip"
+        data-start="0"
+        data-duration="2.5"
+        data-track-index="1"
+        data-layout-ignore
+      ></div>
+    </div>
+    <script>
+      const DURATION = 2.5;
+      const TWO_PI = Math.PI * 2;
+      const source = document.querySelector("#still");
+      const layer = document.querySelector("#motion-layer");
+      const caps = [
+        {
+          id: "cap-top", box: [448, 810, 200, 116], phase: 0,
+          polygon: [[5,80],[14,51],[41,25],[83,10],[126,15],[165,35],[193,62],[194,79],[170,88],[141,82],[113,91],[78,87],[48,94],[19,90]]
+        },
+        {
+          id: "cap-middle", box: [394, 920, 196, 122], phase: 0.08,
+          polygon: [[3,79],[13,50],[42,27],[82,15],[122,21],[160,39],[190,65],[192,82],[170,91],[139,86],[108,98],[74,91],[40,99],[14,92]]
+        },
+        {
+          id: "cap-right", box: [532, 1000, 212, 122], phase: 0.16,
+          polygon: [[5,78],[18,48],[53,25],[96,17],[138,24],[176,43],[205,69],[208,86],[184,98],[151,92],[119,102],[83,94],[49,101],[20,92]]
+        },
+        {
+          id: "cap-lower", box: [288, 1015, 315, 160], phase: 0.24,
+          polygon: [[10,100],[16,75],[34,51],[62,30],[102,17],[152,12],[197,20],[237,39],[272,66],[299,97],[297,127],[282,145],[259,136],[237,132],[212,127],[187,132],[162,128],[137,135],[112,128],[87,134],[62,124],[37,127],[14,113]]
+        }
+      ];
+
+      function buildCap(spec) {
+        const [x, y, width, height] = spec.box;
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        canvas.id = spec.id;
+        canvas.className = "mushroom-cap";
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.left = `${x}px`;
+        canvas.style.top = `${y}px`;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        canvas.dataset.phase = String(spec.phase);
+        context.save();
+        context.beginPath();
+        spec.polygon.forEach(([pointX, pointY], index) => {
+          if (index === 0) context.moveTo(pointX, pointY);
+          else context.lineTo(pointX, pointY);
+        });
+        context.closePath();
+        context.clip();
+        context.drawImage(source, -x, -y, 1120, 1400);
+        context.restore();
+        layer.appendChild(canvas);
+        return canvas;
+      }
+
+      function renderAt(timeSeconds) {
+        document.querySelectorAll(".mushroom-cap").forEach((canvas) => {
+          const phaseSeconds = Number(canvas.dataset.phase);
+          const angle = TWO_PI * ((timeSeconds + phaseSeconds) / DURATION);
+          const primary = (1 - Math.cos(angle)) / 2;
+          const rebound = (1 - Math.cos(angle * 2)) / 4;
+          const bounce = 0.78 * primary + 0.22 * rebound;
+          const scaleX = 1 + 0.025 * bounce;
+          const scaleY = 1 + 0.017 * bounce;
+          const lift = -3.5 * bounce;
+          canvas.style.transform = `translateY(${lift.toFixed(4)}px) scale(${scaleX.toFixed(6)}, ${scaleY.toFixed(6)})`;
+        });
+      }
+
+      const buildReady = new Promise((resolve, reject) => {
+        const finish = () => {
+          caps.forEach(buildCap);
+          renderAt(0);
+          resolve();
+        };
+        if (source.complete && source.naturalWidth > 0) finish();
+        else {
+          source.addEventListener("load", finish, { once: true });
+          source.addEventListener("error", () => reject(new Error("Source artwork failed to load")), { once: true });
+        }
+      });
+
+      window.__hf = window.__hf || {};
+      window.__hf.buildReady = window.__hf.buildReady || {};
+      window.__hf.buildReady["mushroom-caps"] = buildReady;
+      const timeline = gsap.timeline({ paused: true });
+      timeline.to({}, { duration: DURATION });
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = timeline;
+      window.addEventListener("hf-seek", (event) => {
+        event.detail.waitUntil(buildReady.then(() => renderAt(event.detail.time)));
+      });
+    </script>
+  </body>
+</html>

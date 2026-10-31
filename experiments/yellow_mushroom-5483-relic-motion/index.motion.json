@@ -1,0 +1,14 @@
+{
+  "duration": 2.5,
+  "assertions": [
+    { "kind": "staysInFrame", "selector": "#cap-top" },
+    { "kind": "staysInFrame", "selector": "#cap-middle" },
+    { "kind": "staysInFrame", "selector": "#cap-right" },
+    { "kind": "staysInFrame", "selector": "#cap-lower" },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": "#motion-layer",
+      "maxStaticSec": 0.55
+    }
+  ]
+}

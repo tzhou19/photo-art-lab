@@ -1,2 +1,8 @@
 /inputs/
 /outputs/
+
+# Local dependencies, render caches, and generated exports
+node_modules/
+.hyperframes/
+renders/
+.DS_Store
